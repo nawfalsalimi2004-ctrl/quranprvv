@@ -22,7 +22,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
@@ -45,7 +45,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
         return;
       }
 
-      register(name, email, password);
+      await register(name, email, password);
       setSuccessMsg('تم إنشاء الحساب بنجاح! مرحباً بك.');
       setTimeout(() => {
         onClose();
@@ -60,7 +60,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
         return;
       }
 
-      const res = login(email, password);
+      const res = await login(email, password);
       if (!res.success) {
         setError(res.message || 'بيانات الدخول غير صحيحة. يرجى التحقق من البريد وكلمة المرور.');
         return;

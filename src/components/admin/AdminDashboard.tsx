@@ -30,10 +30,10 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, registeredUsers } = useAuth();
   
   const [activeAdminTab, setActiveAdminTab] = useState<'overview' | 'users' | 'templates' | 'logs' | 'settings'>('overview');
-  const [usersList, setUsersList] = useState<User[]>(INITIAL_USERS);
+  const [usersList, setUsersList] = useState<User[]>(registeredUsers || INITIAL_USERS);
   const [templatesList, setTemplatesList] = useState<TemplateSetting[]>(INITIAL_TEMPLATES_SETTINGS);
   const [logsList, setLogsList] = useState<SystemLog[]>(INITIAL_LOGS);
   const [searchQuery, setSearchQuery] = useState('');

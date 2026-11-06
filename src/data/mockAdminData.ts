@@ -3,54 +3,14 @@ import { AdminStat, SystemLog, TemplateSetting } from '../types/admin';
 
 export const INITIAL_USERS: User[] = [
   {
-    id: 'usr-1',
-    name: 'عبدالرحمن الشهري',
+    id: 'usr-admin',
+    name: 'مدير النظام (Admin)',
     email: 'admin@cvpro.com',
     role: 'admin',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-    createdAt: '2024-01-15',
-    resumesCount: 14,
+    createdAt: new Date().toISOString().split('T')[0],
+    resumesCount: 0,
     status: 'active'
-  },
-  {
-    id: 'usr-2',
-    name: 'سارة العتيبي',
-    email: 'sara.otaibi@example.com',
-    role: 'user',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-    createdAt: '2024-02-10',
-    resumesCount: 3,
-    status: 'active'
-  },
-  {
-    id: 'usr-3',
-    name: 'عمر القحطاني',
-    email: 'omar.q@example.com',
-    role: 'user',
-    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150',
-    createdAt: '2024-03-01',
-    resumesCount: 5,
-    status: 'active'
-  },
-  {
-    id: 'usr-4',
-    name: 'نورة الدوسري',
-    email: 'noura.d@example.com',
-    role: 'user',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-    createdAt: '2024-03-12',
-    resumesCount: 2,
-    status: 'active'
-  },
-  {
-    id: 'usr-5',
-    name: 'ماجد الشمري',
-    email: 'majed.sh@example.com',
-    role: 'user',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-    createdAt: '2024-03-25',
-    resumesCount: 1,
-    status: 'suspended'
   }
 ];
 
