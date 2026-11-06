@@ -465,17 +465,17 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
 
             {/* Direct REST Endpoint */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">رابط نقطة النهاية (Endpoint URL):</label>
+              <label className="text-xs font-bold text-slate-700">رابط نقطة النهاية المباشر (Vercel Live Endpoint):</label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   readOnly
-                  value={`https://api.cvpro.com/v1/articles/${apiShareArticle.id}`}
-                  className="flex-1 px-3 py-2 bg-slate-900 text-indigo-300 font-mono text-xs rounded-xl border border-slate-800"
+                  value={`https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}`}
+                  className="flex-1 px-3 py-2 bg-slate-900 text-emerald-300 font-mono text-xs rounded-xl border border-slate-800"
                   dir="ltr"
                 />
                 <button
-                  onClick={() => copyToClipboard(`https://api.cvpro.com/v1/articles/${apiShareArticle.id}`, 'endpoint')}
+                  onClick={() => copyToClipboard(`https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}`, 'endpoint')}
                   className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
                 >
                   {copiedText === 'endpoint' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -507,11 +507,11 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
                   onClick={() => {
                     let code = '';
                     if (activeCodeTab === 'curl') {
-                      code = `curl -X GET "https://api.cvpro.com/v1/articles/${apiShareArticle.id}" \\\n  -H "Authorization: Bearer cvpro_public_key" \\\n  -H "Accept: application/json"`;
+                      code = `curl -X GET "https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}" \\\n  -H "Authorization: Bearer cvpro_public_key" \\\n  -H "Accept: application/json"`;
                     } else if (activeCodeTab === 'javascript') {
-                      code = `fetch('https://api.cvpro.com/v1/articles/${apiShareArticle.id}', {\n  headers: {\n    'Authorization': 'Bearer cvpro_public_key',\n    'Accept': 'application/json'\n  }\n})\n.then(res => res.json())\n.then(article => console.log(article));`;
+                      code = `fetch('https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}', {\n  headers: {\n    'Authorization': 'Bearer cvpro_public_key',\n    'Accept': 'application/json'\n  }\n})\n.then(res => res.json())\n.then(article => console.log(article));`;
                     } else if (activeCodeTab === 'python') {
-                      code = `import requests\n\nurl = "https://api.cvpro.com/v1/articles/${apiShareArticle.id}"\nheaders = {"Authorization": "Bearer cvpro_public_key"}\nresponse = requests.get(url, headers=headers)\nprint(response.json())`;
+                      code = `import requests\n\nurl = "https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}"\nheaders = {"Authorization": "Bearer cvpro_public_key"}\nresponse = requests.get(url, headers=headers)\nprint(response.json())`;
                     } else {
                       code = JSON.stringify(apiShareArticle, null, 2);
                     }
@@ -528,7 +528,7 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
               <div className="bg-slate-950 rounded-2xl p-4 text-left font-mono text-[11px] text-slate-200 overflow-x-auto max-h-56" dir="ltr">
                 {activeCodeTab === 'curl' && (
                   <pre className="text-emerald-400">
-{`curl -X GET "https://api.cvpro.com/v1/articles/${apiShareArticle.id}" \\
+{`curl -X GET "https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}" \\
   -H "Authorization: Bearer cvpro_public_key" \\
   -H "Accept: application/json"`}
                   </pre>
@@ -536,7 +536,7 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
 
                 {activeCodeTab === 'javascript' && (
                   <pre className="text-amber-300">
-{`fetch('https://api.cvpro.com/v1/articles/${apiShareArticle.id}', {
+{`fetch('https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}', {
   headers: {
     'Authorization': 'Bearer cvpro_public_key',
     'Accept': 'application/json'
@@ -544,8 +544,8 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
 })
 .then(response => response.json())
 .then(data => {
-  console.log("Article Title:", data.title);
-  console.log("Article Content:", data.content);
+  console.log("Article Title:", data.article.title);
+  console.log("Article Content:", data.article.content);
 });`}
                   </pre>
                 )}
@@ -554,15 +554,15 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
                   <pre className="text-sky-300">
 {`import requests
 
-url = "https://api.cvpro.com/v1/articles/${apiShareArticle.id}"
+url = "https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}"
 headers = {
     "Authorization": "Bearer cvpro_public_key",
     "Accept": "application/json"
 }
 
 response = requests.get(url, headers=headers)
-article = response.json()
-print("Loaded Article:", article["title"])`}
+result = response.json()
+print("Loaded Article:", result["article"]["title"])`}
                   </pre>
                 )}
 

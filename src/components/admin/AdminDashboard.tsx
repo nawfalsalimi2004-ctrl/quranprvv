@@ -1300,14 +1300,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
               <div className="space-y-3 text-xs">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono space-y-1" dir="ltr">
                   <div className="text-slate-500">// Endpoint 1: Fetch all career articles</div>
-                  <div className="font-bold text-brand-600">GET https://your-domain.vercel.app/api/articles</div>
-                  <div className="text-slate-700">Headers: &#123; "x-api-key": "cvpro_live_..." &#125;</div>
+                  <div className="font-bold text-emerald-600">GET https://quranprvv.vercel.app/api/articles</div>
+                  <div className="text-slate-700">Headers: &#123; "x-api-key": "cvpro_live_...", "Accept": "application/json" &#125;</div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono space-y-1" dir="ltr">
-                  <div className="text-slate-500">// Endpoint 2: Fetch single article by slug</div>
-                  <div className="font-bold text-brand-600">GET https://your-domain.vercel.app/api/articles/:slug</div>
-                  <div className="text-slate-700">Headers: &#123; "x-api-key": "cvpro_live_..." &#125;</div>
+                  <div className="text-slate-500">// Endpoint 2: Fetch single article by ID or slug</div>
+                  <div className="font-bold text-emerald-600">GET https://quranprvv.vercel.app/api/articles?id=art-1</div>
+                  <div className="text-slate-700">Headers: &#123; "x-api-key": "cvpro_live_...", "Accept": "application/json" &#125;</div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono space-y-1" dir="ltr">
+                  <div className="text-slate-500">// Endpoint 3: Versioned REST API (v1)</div>
+                  <div className="font-bold text-indigo-600">GET https://quranprvv.vercel.app/api/v1/articles</div>
+                  <div className="text-slate-700">Headers: &#123; "Authorization": "Bearer cvpro_live_..." &#125;</div>
                 </div>
               </div>
 
