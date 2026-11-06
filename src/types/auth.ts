@@ -9,6 +9,7 @@ export interface User {
   createdAt: string;
   resumesCount: number;
   status: 'active' | 'suspended';
+  emailVerified?: boolean;
 }
 
 export interface AuthState {

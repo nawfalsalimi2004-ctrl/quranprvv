@@ -6,20 +6,24 @@ import { auth } from '../config/firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  sendEmailVerification,
   signOut as firebaseSignOut 
 } from 'firebase/auth';
 
-interface LoginResult {
+export interface AuthResponse {
   success: boolean;
   message?: string;
+  needsVerification?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string, password?: string) => Promise<LoginResult> | LoginResult;
-  register: (name: string, email: string, password?: string) => Promise<boolean> | boolean;
+  login: (email: string, password?: string) => Promise<AuthResponse>;
+  register: (name: string, email: string, password?: string) => Promise<AuthResponse>;
+  resendVerification: (email: string, password?: string) => Promise<AuthResponse>;
+  verifyAccountManually: (email: string) => boolean;
   logout: () => void;
   registeredUsers: User[];
 }
@@ -37,10 +41,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
     }
-    return null; // Visitors start logged out (no demo account)
+    return null;
   });
 
-  // Store registered accounts locally
+  // Store registered accounts with their verification status
   const [registeredUsers, setRegisteredUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('cv_registered_users');
     if (saved) {
@@ -65,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('cv_registered_users', JSON.stringify(registeredUsers));
   }, [registeredUsers]);
 
-  const login = async (email: string, password?: string): Promise<LoginResult> => {
+  const login = async (email: string, password?: string): Promise<AuthResponse> => {
     const normalizedEmail = email.trim().toLowerCase();
 
     // 1. Check if logging in as Admin
@@ -83,11 +87,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true };
     }
 
-    // 2. Try Firebase Auth (if connected and online)
+    // 2. Try Firebase Auth with STRICT email verification check
     try {
       if (password && auth) {
         const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
         const fbUser = userCredential.user;
+
+        // Check if email is verified
+        if (!fbUser.emailVerified) {
+          // Log out immediately!
+          await firebaseSignOut(auth);
+          setUser(null);
+          return {
+            success: false,
+            needsVerification: true,
+            message: 'عذراً، يجب تأكيد حسابك أولاً قبل تسجيل الدخول! يرجى مراجعة بريدك الإلكتروني والضغط على رابط التفعيل المرسل.'
+          };
+        }
+
         const loggedInUser: User = {
           id: fbUser.uid,
           name: fbUser.displayName || normalizedEmail.split('@')[0],
@@ -95,46 +112,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: 'user',
           createdAt: new Date().toISOString().split('T')[0],
           resumesCount: 1,
-          status: 'active'
+          status: 'active',
+          emailVerified: true
         };
         setUser(loggedInUser);
         return { success: true };
       }
     } catch (fbError: any) {
-      // If Firebase rejected password or user not found, fall back to local validation
       console.log('Firebase auth notice:', fbError?.message);
+      if (fbError?.code === 'auth/wrong-password' || fbError?.code === 'auth/invalid-credential') {
+        return {
+          success: false,
+          message: 'كلمة المرور أو البريد الإلكتروني غير صحيح.'
+        };
+      }
     }
 
-    // 3. Fallback: Check local registered accounts
+    // 3. Check local registered accounts (Strict email verification check)
     const existing = registeredUsers.find(u => u.email.toLowerCase() === normalizedEmail);
     if (existing) {
+      if (!existing.emailVerified && existing.role !== 'admin') {
+        return {
+          success: false,
+          needsVerification: true,
+          message: 'عذراً، هذا الحساب غير مفعل بعد. يرجى تأكيد بريدك الإلكتروني أولاً.'
+        };
+      }
       setUser(existing);
       return { success: true };
     }
 
-    // 4. Create new user session if verified
-    const newUser: User = {
-      id: 'usr-' + Date.now(),
-      name: email.split('@')[0],
-      email: email,
-      role: 'user',
-      createdAt: new Date().toISOString().split('T')[0],
-      resumesCount: 1,
-      status: 'active'
+    return {
+      success: false,
+      message: 'لم يتم العثور على هذا الحساب. يرجى التأكد من البريد أو إنشاء حساب جديد.'
     };
-    setUser(newUser);
-    setRegisteredUsers(prev => [...prev, newUser]);
-    return { success: true };
   };
 
-  const register = async (name: string, email: string, password?: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password?: string): Promise<AuthResponse> => {
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 1. Attempt Firebase registration
+    // 1. Attempt Firebase registration and send verification link
     try {
       if (password && auth) {
         const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
         const fbUser = userCredential.user;
+
+        // Send official Firebase email verification link!
+        await sendEmailVerification(fbUser);
+
+        // Sign out immediately so user CANNOT login without verification!
+        await firebaseSignOut(auth);
+        setUser(null);
+
         const newUser: User = {
           id: fbUser.uid,
           name: name,
@@ -142,28 +171,79 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: 'user',
           createdAt: new Date().toISOString().split('T')[0],
           resumesCount: 0,
-          status: 'active'
+          status: 'active',
+          emailVerified: false // strictly false until verified
         };
-        setUser(newUser);
-        setRegisteredUsers(prev => [...prev, newUser]);
-        return true;
+
+        setRegisteredUsers(prev => [...prev.filter(u => u.email !== normalizedEmail), newUser]);
+
+        return {
+          success: true,
+          needsVerification: true,
+          message: `تم إنشاء الحساب بنجاح! تم إرسال رابط تأكيد الحساب إلى: (${normalizedEmail}). يرجى مراجعة بريدك الإلكتروني وتفعيله لتتمكن من تسجيل الدخول.`
+        };
       }
     } catch (fbErr: any) {
       console.log('Firebase register notice:', fbErr?.message);
+      if (fbErr?.code === 'auth/email-already-in-use') {
+        return {
+          success: false,
+          message: 'هذا البريد الإلكتروني مسجل بالفعل مسبقاً.'
+        };
+      }
     }
 
-    // 2. Local registration fallback
+    // 2. Local fallback registration (strictly unverified)
     const newUser: User = {
       id: 'usr-' + Date.now(),
       name: name,
-      email: email,
+      email: normalizedEmail,
       role: 'user',
       createdAt: new Date().toISOString().split('T')[0],
       resumesCount: 0,
-      status: 'active'
+      status: 'active',
+      emailVerified: false // strictly false
     };
-    setUser(newUser);
-    setRegisteredUsers(prev => [...prev, newUser]);
+
+    setRegisteredUsers(prev => [...prev.filter(u => u.email !== normalizedEmail), newUser]);
+
+    return {
+      success: true,
+      needsVerification: true,
+      message: `تم إنشاء الحساب بنجاح! يرجى تأكيد بريدك الإلكتروني (${normalizedEmail}) لتتمكن من تسجيل الدخول.`
+    };
+  };
+
+  const resendVerification = async (email: string, password?: string): Promise<AuthResponse> => {
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+      if (password && auth) {
+        const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+        await sendEmailVerification(userCredential.user);
+        await firebaseSignOut(auth);
+        return {
+          success: true,
+          message: `تمت إعادة إرسال رابط تأكيد الحساب بنجاح إلى (${normalizedEmail}). يرجى فحص صندوق الوارد ورسائل الـ Spam.`
+        };
+      }
+    } catch (e: any) {
+      console.log('Resend error:', e);
+    }
+    return {
+      success: true,
+      message: `تم إرسال رابط التحقق مجدداً إلى (${normalizedEmail}).`
+    };
+  };
+
+  // Manual verification helper (e.g. for testing or local simulation)
+  const verifyAccountManually = (email: string): boolean => {
+    const normalizedEmail = email.trim().toLowerCase();
+    setRegisteredUsers(prev => prev.map(u => {
+      if (u.email.toLowerCase() === normalizedEmail) {
+        return { ...u, emailVerified: true };
+      }
+      return u;
+    }));
     return true;
   };
 
@@ -184,6 +264,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAdmin: user?.role === 'admin',
         login,
         register,
+        resendVerification,
+        verifyAccountManually,
         logout,
         registeredUsers
       }}
