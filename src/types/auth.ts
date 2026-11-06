@@ -10,6 +10,11 @@ export interface User {
   resumesCount: number;
   status: 'active' | 'suspended';
   emailVerified?: boolean;
+  isVerifiedBadge?: boolean;
+  isVip?: boolean;
+  vipExpiresAt?: string;
+  isBanned?: boolean;
+  banReason?: string;
 }
 
 export interface AuthState {
