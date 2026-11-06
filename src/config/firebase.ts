@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase/firestore';
 
 // Firebase configuration provided by user
 export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForInitialization-CVPro",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCUwGMqFKnM5gzZ_Vv4PWvM4PKJvQPe0Vs",
   authDomain: "ai-studio-applet-webapp.firebaseapp.com",
   projectId: "ai-studio-applet-webapp",
   storageBucket: "ai-studio-applet-webapp.appspot.com",
