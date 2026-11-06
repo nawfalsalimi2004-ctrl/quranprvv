@@ -7,7 +7,8 @@ import {
   PromoCode, 
   SubscriptionCode, 
   Article, 
-  ApiKey 
+  ApiKey,
+  ApiConnection
 } from '../types/admin';
 
 // Only official system Admin exists initially - NO fake demo accounts!
@@ -247,5 +248,48 @@ export const INITIAL_API_KEYS: ApiKey[] = [
     isActive: true,
     requestsCount: 24,
     lastUsedAt: 'الآن'
+  }
+];
+
+// Initial Connected Websites & Apps using the API
+export const INITIAL_API_CONNECTIONS: ApiConnection[] = [
+  {
+    id: 'conn-1',
+    name: 'بوابة وظائف الخليج والشرق الأوسط',
+    domain: 'jobs-arabia.com',
+    ip: '178.62.204.18',
+    country: 'السعودية 🇸🇦',
+    apiKey: 'cvpro_live_a89f4b72c1e09d84e5671a9320',
+    endpoint: '/api/articles',
+    requestsCount: 1420,
+    status: 'online',
+    lastPing: 'منذ ثوانٍ',
+    userAgent: 'JobsArabia/2.4 (cURL Webhook Client)'
+  },
+  {
+    id: 'conn-2',
+    name: 'تطبيق التوظيف الذكي (iOS & Android)',
+    domain: 'app.career-hub.io',
+    ip: '54.217.189.92',
+    country: 'الإمارات 🇦🇪',
+    apiKey: 'cvpro_live_a89f4b72c1e09d84e5671a9320',
+    endpoint: '/api/v1/articles?id=art-1',
+    requestsCount: 890,
+    status: 'online',
+    lastPing: 'منذ دقيقة',
+    userAgent: 'CareerHubApp/3.1 (Dart/Flutter Mobile)'
+  },
+  {
+    id: 'conn-3',
+    name: 'منصة الخريجين والتوظيف الجامعي',
+    domain: 'alumni-portal.edu.sa',
+    ip: '194.170.12.44',
+    country: 'السعودية 🇸🇦',
+    apiKey: 'cvpro_live_a89f4b72c1e09d84e5671a9320',
+    endpoint: '/api/articles',
+    requestsCount: 310,
+    status: 'idle',
+    lastPing: 'منذ 15 دقيقة',
+    userAgent: 'Node.js/18.17 (Axios Fetcher)'
   }
 ];

@@ -143,7 +143,7 @@ export const CVBuilder: React.FC<CVBuilderProps> = ({ onGoToPreview, onGoToAppea
           </div>
 
           {/* Sidebar Area (4 Cols) */}
-          <div className="lg:col-span-4 sticky top-24 space-y-6">
+          <div className="lg:col-span-4 static lg:sticky top-24 space-y-6">
             <ScoreWidget onGoToPreview={onGoToPreview} />
 
             {/* Quick Tips Box */}

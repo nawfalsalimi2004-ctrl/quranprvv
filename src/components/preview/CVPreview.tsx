@@ -34,7 +34,13 @@ interface CVPreviewProps {
 export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBuilder }) => {
   const { cvData, updateStyle, exportAsJSON, loadDemoData } = useCV();
   const { user } = useAuth();
-  const [zoomLevel, setZoomLevel] = useState<number>(100);
+  const [zoomLevel, setZoomLevel] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 640) return 46;
+      if (window.innerWidth < 1024) return 75;
+    }
+    return 100;
+  });
   const [copied, setCopied] = useState(false);
 
   const handlePrint = () => {
@@ -97,7 +103,7 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
             {/* Zoom Controls */}
             <div className="flex items-center bg-slate-100 rounded-lg p-1 text-slate-600">
               <button
-                onClick={() => setZoomLevel((z) => Math.max(z - 10, 60))}
+                onClick={() => setZoomLevel((z) => Math.max(z - 10, 35))}
                 className="p-1 hover:bg-white rounded transition"
                 title="تصغير"
               >
@@ -114,11 +120,11 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
                 <ZoomIn className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setZoomLevel(100)}
+                onClick={() => setZoomLevel(typeof window !== 'undefined' && window.innerWidth < 640 ? 46 : 100)}
                 className="p-1 hover:bg-white rounded transition text-[10px] font-bold px-1.5"
-                title="إعادة ضبط"
+                title="ملاءمة الشاشة للجهاز"
               >
-                100%
+                ملاءمة
               </button>
             </div>
 

@@ -102,3 +102,17 @@ export interface ApiKey {
   requestsCount: number;
   lastUsedAt?: string;
 }
+
+export interface ApiConnection {
+  id: string;
+  name: string;
+  domain: string;
+  ip: string;
+  country: string;
+  apiKey: string;
+  endpoint: string;
+  requestsCount: number;
+  status: 'online' | 'idle' | 'blocked';
+  lastPing: string;
+  userAgent?: string;
+}

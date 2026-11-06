@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { SubscriptionPlan } from '../../types/admin';
 import { INITIAL_PLANS } from '../../data/mockAdminData';
+import { InvoiceCheckout } from './InvoiceCheckout';
 
 interface PricingPageProps {
   onGoToBuilder?: () => void;
@@ -46,6 +47,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGoToBuilder, onOpenA
   const [subCodeInput, setSubCodeInput] = useState('');
   const [subCodeMessage, setSubCodeMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [isActivating, setIsActivating] = useState(false);
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<SubscriptionPlan | null>(null);
 
   // Sync plans from admin storage if edited
   useEffect(() => {
@@ -101,17 +103,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGoToBuilder, onOpenA
       return;
     }
 
-    // Direct simulation of VIP upgrade if user clicks subscribe
-    updateCurrentUser({
-      isVip: true,
-      vipExpiresAt: billingCycle === 'yearly' ? '2027-12-31' : '2026-12-31',
-      isVerifiedBadge: true
-    });
-
-    setSubCodeMessage({
-      text: `مبروك! تم تفعيل اشتراكك في ${plan.name} بنجاح وحسابك أصبح يحمل شارة التوثيق 🛡️ وعضوية VIP 👑.`,
-      type: 'success'
-    });
+    // Direct opening of official Invoice & Checkout page with Promo Code support
+    setSelectedPlanForCheckout(plan);
   };
 
   return (
@@ -486,6 +479,21 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onGoToBuilder, onOpenA
           </div>
         </div>
       </div>
+
+      {/* INVOICE & CHECKOUT MODAL */}
+      {selectedPlanForCheckout && (
+        <InvoiceCheckout
+          plan={selectedPlanForCheckout}
+          billingCycle={billingCycle}
+          onClose={() => setSelectedPlanForCheckout(null)}
+          onSuccess={() => {
+            setSubCodeMessage({
+              text: `تهانينا! تم سداد الفاتورة وتفعيل ${selectedPlanForCheckout.name} بنجاح، ومُنحت شارة التوثيق وعضوية VIP 👑.`,
+              type: 'success'
+            });
+          }}
+        />
+      )}
 
     </div>
   );
