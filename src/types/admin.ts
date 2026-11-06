@@ -80,7 +80,9 @@ export interface Article {
   coverImage?: string;
   readTimeMinutes: number;
   viewsCount: number;
+  views?: number;
   isPublished: boolean;
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
   tags: string[];

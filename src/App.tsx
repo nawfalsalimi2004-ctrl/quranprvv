@@ -8,9 +8,11 @@ import { CVBuilder } from './components/builder/CVBuilder';
 import { AppearanceStudio } from './components/appearance/AppearanceStudio';
 import { CVPreview } from './components/preview/CVPreview';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { ArticlesPage } from './components/articles/ArticlesPage';
+import { PricingPage } from './components/pricing/PricingPage';
 import { AuthModal } from './components/auth/AuthModal';
 
-export type ActiveTab = 'home' | 'builder' | 'appearance' | 'preview' | 'admin';
+export type ActiveTab = 'home' | 'builder' | 'appearance' | 'preview' | 'articles' | 'pricing' | 'admin';
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
@@ -32,6 +34,8 @@ const MainApp: React.FC = () => {
             onStartBuilder={() => setActiveTab('builder')}
             onExploreTemplates={() => setActiveTab('appearance')}
             onOpenAuth={() => setAuthModalOpen(true)}
+            onGoToArticles={() => setActiveTab('articles')}
+            onGoToPricing={() => setActiveTab('pricing')}
           />
         )}
 
@@ -52,6 +56,20 @@ const MainApp: React.FC = () => {
           <CVPreview
             onGoToAppearance={() => setActiveTab('appearance')}
             onGoToBuilder={() => setActiveTab('builder')}
+          />
+        )}
+
+        {activeTab === 'articles' && (
+          <ArticlesPage
+            onGoToBuilder={() => setActiveTab('builder')}
+            onGoToPricing={() => setActiveTab('pricing')}
+          />
+        )}
+
+        {activeTab === 'pricing' && (
+          <PricingPage
+            onGoToBuilder={() => setActiveTab('builder')}
+            onOpenAuth={() => setAuthModalOpen(true)}
           />
         )}
 

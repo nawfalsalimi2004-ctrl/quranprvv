@@ -11,8 +11,12 @@ import {
   Layout, 
   Users, 
   Award,
-  Zap,
-  Check
+  Zap, 
+  Check,
+  BookOpen,
+  Crown,
+  BadgeCheck,
+  Code2
 } from 'lucide-react';
 import { TEMPLATES } from '../../data/templates';
 import { useCV } from '../../context/CVContext';
@@ -22,9 +26,17 @@ interface HomePageProps {
   onStartBuilder: () => void;
   onExploreTemplates: () => void;
   onOpenAuth: () => void;
+  onGoToArticles?: () => void;
+  onGoToPricing?: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onStartBuilder, onExploreTemplates, onOpenAuth }) => {
+export const HomePage: React.FC<HomePageProps> = ({ 
+  onStartBuilder, 
+  onExploreTemplates, 
+  onOpenAuth,
+  onGoToArticles,
+  onGoToPricing 
+}) => {
   const { updateStyle } = useCV();
 
   const handleSelectTemplateAndBuild = (id: TemplateId) => {
@@ -315,6 +327,115 @@ export const HomePage: React.FC<HomePageProps> = ({ onStartBuilder, onExploreTem
                 احصل على ملف PDF عالي الجودة متوافق مع مقاس A4 القياسي وجاهز للإرسال الفوري.
               </p>
             </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ARTICLES & VIP SECTION */}
+      <section className="py-20 bg-slate-100/70 border-t border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+            
+            {/* Articles Highlight Card */}
+            <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>المقالات ومكتبة الـ API</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                    REST API Ready
+                  </span>
+                </div>
+
+                <h3 className="text-2xl font-black text-slate-900 leading-snug">
+                  نصائح مهنية معتمدة من مسؤولي التوظيف والـ HR
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  تعلم أسرار تجاوز أنظمة ATS، وصياغة الإنجازات بالأرقام، والاستعداد للمقابلات الشخصية، مع إمكانية مشاركة واستدعاء أي مقال عبر الـ API للتطبيقات والمواقع.
+                </p>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <Code2 className="w-4 h-4 text-indigo-600" />
+                    <span>مشاركة مقالات عبر مفاتيح API للمواقع والتطبيقات</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-normal">
+                    يمكن للمطورين استدعاء المقالات برمجياً بصيغة JSON عبر cURL أو JavaScript مباشرة.
+                  </p>
+                </div>
+              </div>
+
+              {onGoToArticles && (
+                <button
+                  onClick={onGoToArticles}
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>تصفح المقالات والنصائح</span>
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* VIP Plans & Verified Badge Card */}
+            <div className="bg-gradient-to-br from-amber-500/10 via-brand-50 to-white rounded-3xl p-8 border border-amber-200/80 shadow-sm flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5 fill-amber-500 text-amber-600" />
+                    <span>عضوية VIP وشارة التوثيق</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full font-bold">
+                    <BadgeCheck className="w-3 h-3 text-blue-600 fill-blue-600" />
+                    شارة التوثيق الزرقاء
+                  </span>
+                </div>
+
+                <h3 className="text-2xl font-black text-slate-900 leading-snug">
+                  تميز عن المنافسين مع باقات VIP الحصرية
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  احصل على كافة القوالب الفاخرة، بدون علامة مائية نهائياً، مع شارة التوثيق الزرقاء الرسمية في حسابك وسيرتك لتعزيز ثقة مديري التوظيف.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span className="font-semibold text-slate-700">قوالب VIP الفاخرة</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span className="font-semibold text-slate-700">إزالة العلامة المائية</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center gap-2">
+                    <BadgeCheck className="w-4 h-4 text-blue-600 fill-blue-600 shrink-0" />
+                    <span className="font-semibold text-slate-700">شارة التوثيق الرسمية</span>
+                  </div>
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-brand-600 shrink-0" />
+                    <span className="font-semibold text-slate-700">أكواد تفعيل وبرومو</span>
+                  </div>
+                </div>
+              </div>
+
+              {onGoToPricing && (
+                <button
+                  onClick={onGoToPricing}
+                  className="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 transition flex items-center justify-center gap-2"
+                >
+                  <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
+                  <span>استكشف باقات VIP والأسعار</span>
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
           </div>
 
         </div>

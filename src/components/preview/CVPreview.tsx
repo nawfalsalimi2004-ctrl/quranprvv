@@ -18,10 +18,13 @@ import {
   Palette,
   Sparkles,
   Stamp,
-  Camera
+  Camera,
+  BadgeCheck,
+  Crown
 } from 'lucide-react';
 import { TEMPLATES } from '../../data/templates';
 import { TemplateId } from '../../types/cv';
+import { useAuth } from '../../context/AuthContext';
 
 interface CVPreviewProps {
   onGoToAppearance?: () => void;
@@ -30,6 +33,7 @@ interface CVPreviewProps {
 
 export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBuilder }) => {
   const { cvData, updateStyle, exportAsJSON, loadDemoData } = useCV();
+  const { user } = useAuth();
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [copied, setCopied] = useState(false);
 
@@ -132,6 +136,14 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
               <span>{cvData.style.showWatermark !== false ? 'العلامة المائية: مفعلة' : 'العلامة المائية: معطلة'}</span>
             </button>
 
+            {/* User Verified Status Pill */}
+            {user?.isVerifiedBadge && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold">
+                <BadgeCheck className="w-4 h-4 text-blue-600 fill-blue-600 text-white" />
+                <span>سيرة ذاتية موثقة رسمياً</span>
+              </div>
+            )}
+
             {/* Quick Appearance Customizer Link */}
             {onGoToAppearance && (
               <button
@@ -215,6 +227,14 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
                     VERIFIED RESUME • ai-studio-applet-webapp
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Official User Verified Seal on CV */}
+            {user?.isVerifiedBadge && (
+              <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold shadow-md border border-blue-400/40 select-none no-print">
+                <BadgeCheck className="w-3.5 h-3.5 fill-white text-blue-600" />
+                <span>سيرة ذاتية موثقة رسمياً ✓</span>
               </div>
             )}
 

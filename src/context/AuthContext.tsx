@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types/auth';
-import { INITIAL_USERS } from '../data/mockAdminData';
+import { INITIAL_USERS, INITIAL_PROMOS, INITIAL_SUBSCRIPTION_CODES } from '../data/mockAdminData';
 import { ADMIN_CREDENTIALS } from '../data/authConfig';
+import { SubscriptionCode, PromoCode } from '../types/admin';
 import { auth } from '../config/firebase';
 import { 
   signInWithEmailAndPassword, 
@@ -26,6 +27,9 @@ interface AuthContextType {
   verifyAccountManually: (email: string) => boolean;
   logout: () => void;
   registeredUsers: User[];
+  updateCurrentUser: (updates: Partial<User>) => void;
+  redeemSubscriptionCode: (code: string) => { success: boolean; message: string };
+  applyPromoCode: (code: string) => { success: boolean; discountPercent?: number; message: string };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -68,6 +72,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem('cv_registered_users', JSON.stringify(registeredUsers));
   }, [registeredUsers]);
+
+  // Synchronize user if admin granted verified badge or VIP in admin_users or cv_registered_users
+  useEffect(() => {
+    if (!user) return;
+    const checkSync = () => {
+      const adminUsersStr = localStorage.getItem('admin_users');
+      if (adminUsersStr) {
+        try {
+          const list: User[] = JSON.parse(adminUsersStr);
+          const found = list.find(u => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase());
+          if (found) {
+            if (
+              found.isVerifiedBadge !== user.isVerifiedBadge ||
+              found.isVip !== user.isVip ||
+              found.isBanned !== user.isBanned ||
+              found.name !== user.name
+            ) {
+              setUser(prev => prev ? ({ ...prev, ...found }) : null);
+            }
+          }
+        } catch (e) {}
+      }
+    };
+    checkSync();
+    window.addEventListener('storage', checkSync);
+    return () => window.removeEventListener('storage', checkSync);
+  }, [user?.id, user?.email, user?.isVerifiedBadge, user?.isVip]);
 
   const login = async (email: string, password?: string): Promise<AuthResponse> => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -247,6 +278,115 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
+  const updateCurrentUser = (updates: Partial<User>) => {
+    if (!user) return;
+    const updated = { ...user, ...updates };
+    setUser(updated);
+    setRegisteredUsers(prev => prev.map(u => u.id === user.id ? updated : u));
+    
+    // Also sync to admin_users if present
+    const adminUsersStr = localStorage.getItem('admin_users');
+    if (adminUsersStr) {
+      try {
+        const adminUsers: User[] = JSON.parse(adminUsersStr);
+        const updatedAdminUsers = adminUsers.map(u => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase() ? updated : u);
+        localStorage.setItem('admin_users', JSON.stringify(updatedAdminUsers));
+      } catch (e) {}
+    }
+  };
+
+  const redeemSubscriptionCode = (code: string): { success: boolean; message: string } => {
+    if (!user) {
+      return { success: false, message: 'يرجى تسجيل الدخول إلى حسابك أولاً لتتمكن من تفعيل كود الاشتراك.' };
+    }
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) {
+      return { success: false, message: 'يرجى كتابة رمز كود الاشتراك أولاً.' };
+    }
+
+    let subCodes: SubscriptionCode[] = [];
+    const saved = localStorage.getItem('admin_sub_codes');
+    if (saved) {
+      try { subCodes = JSON.parse(saved); } catch (e) { subCodes = INITIAL_SUBSCRIPTION_CODES; }
+    } else {
+      subCodes = INITIAL_SUBSCRIPTION_CODES;
+    }
+
+    const matchedIndex = subCodes.findIndex(c => c.code.toUpperCase() === cleanCode && !c.isUsed);
+    if (matchedIndex === -1) {
+      return { success: false, message: 'كود الاشتراك غير صحيح أو تم استخدامه مسبقاً من قبل مستخدم آخر.' };
+    }
+
+    const matchedCode = subCodes[matchedIndex];
+    const updatedCodes = [...subCodes];
+    updatedCodes[matchedIndex] = {
+      ...matchedCode,
+      isUsed: true,
+      usedBy: user.email,
+      usedAt: new Date().toISOString().split('T')[0]
+    };
+    localStorage.setItem('admin_sub_codes', JSON.stringify(updatedCodes));
+
+    // Calculate expiry
+    const expiry = new Date();
+    expiry.setMonth(expiry.getMonth() + (matchedCode.durationMonths || 1));
+    const vipExpiresAt = expiry.toISOString().split('T')[0];
+
+    // Upgrade user to VIP with Verified Badge
+    const updatedUser: User = {
+      ...user,
+      isVip: true,
+      vipExpiresAt,
+      isVerifiedBadge: true
+    };
+    setUser(updatedUser);
+    setRegisteredUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
+
+    // Update in admin_users
+    const adminUsersStr = localStorage.getItem('admin_users');
+    if (adminUsersStr) {
+      try {
+        const adminUsers: User[] = JSON.parse(adminUsersStr);
+        const updatedAdminUsers = adminUsers.map(u => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase() ? updatedUser : u);
+        localStorage.setItem('admin_users', JSON.stringify(updatedAdminUsers));
+      } catch (e) {}
+    }
+
+    return {
+      success: true,
+      message: `تهانينا! تم تفعيل ${matchedCode.planName} بنجاح. حسابك الآن أصبح VIP وموثقاً بشارة التوثيق الرسمية 🛡️.`
+    };
+  };
+
+  const applyPromoCode = (code: string): { success: boolean; discountPercent?: number; message: string } => {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) {
+      return { success: false, message: 'يرجى إدخال رمز البرومو أولاً.' };
+    }
+
+    let promos: PromoCode[] = [];
+    const saved = localStorage.getItem('admin_promos');
+    if (saved) {
+      try { promos = JSON.parse(saved); } catch (e) { promos = INITIAL_PROMOS; }
+    } else {
+      promos = INITIAL_PROMOS;
+    }
+
+    const matched = promos.find(p => p.code.toUpperCase() === cleanCode && p.isActive);
+    if (!matched) {
+      return { success: false, message: 'كود الخصم غير صالح أو انتهت صلاحيته.' };
+    }
+    if (matched.usedCount >= matched.maxUses) {
+      return { success: false, message: 'تم استهلاك الحد الأقصى لاستخدام كود الخصم هذا.' };
+    }
+
+    return {
+      success: true,
+      discountPercent: matched.discountPercent,
+      message: `تم تطبيق كود الخصم بنجاح! تم خصم ${matched.discountPercent}% من قيمة الباقة.`
+    };
+  };
+
   const logout = () => {
     try {
       if (auth) {
@@ -267,7 +407,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         resendVerification,
         verifyAccountManually,
         logout,
-        registeredUsers
+        registeredUsers,
+        updateCurrentUser,
+        redeemSubscriptionCode,
+        applyPromoCode
       }}
     >
       {children}
