@@ -16,7 +16,9 @@ import {
   Share2, 
   Layout, 
   Palette,
-  Sparkles
+  Sparkles,
+  Stamp,
+  Camera
 } from 'lucide-react';
 import { TEMPLATES } from '../../data/templates';
 import { TemplateId } from '../../types/cv';
@@ -116,6 +118,20 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
               </button>
             </div>
 
+            {/* Watermark Toggle */}
+            <button
+              onClick={() => updateStyle({ showWatermark: cvData.style.showWatermark === false ? true : false })}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition ${
+                cvData.style.showWatermark !== false
+                  ? 'bg-brand-50 text-brand-700 border border-brand-200'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+              }`}
+              title="تفعيل/تعطيل العلامة المائية عند الطباعة والشاشة"
+            >
+              <Stamp className="w-3.5 h-3.5" />
+              <span>{cvData.style.showWatermark !== false ? 'العلامة المائية: مفعلة' : 'العلامة المائية: معطلة'}</span>
+            </button>
+
             {/* Quick Appearance Customizer Link */}
             {onGoToAppearance && (
               <button
@@ -178,13 +194,39 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
         <div className="flex justify-center overflow-x-auto py-4">
           <div
             id="printable-cv"
+            className="relative"
             style={{
               transform: `scale(${zoomLevel / 100})`,
               transformOrigin: 'top center',
               transition: 'transform 0.15s ease'
             }}
           >
+            {/* Watermark Overlay (Printed & Screen) */}
+            {cvData.style.showWatermark !== false && (
+              <div 
+                className="print-watermark pointer-events-none select-none overflow-hidden absolute inset-0 flex items-center justify-center z-30"
+                style={{ opacity: 0.08 }}
+              >
+                <div className="transform -rotate-45 text-center">
+                  <div className="text-4xl sm:text-5xl font-black tracking-widest text-slate-900 uppercase">
+                    {cvData.style.watermarkText || 'سيرتي برو • CVPRO'}
+                  </div>
+                  <div className="text-xs sm:text-sm font-bold text-slate-700 mt-2 tracking-widest">
+                    VERIFIED RESUME • ai-studio-applet-webapp
+                  </div>
+                </div>
+              </div>
+            )}
+
             {renderActiveTemplate()}
+
+            {/* Bottom Print Watermark Footer */}
+            {cvData.style.showWatermark !== false && (
+              <div className="w-full pt-2.5 pb-2 border-t border-slate-200 bg-white text-center text-[10px] text-slate-400 font-medium flex items-center justify-between px-6">
+                <span>📄 تم إنشاء هذه السيرة الذاتية عبر منصة سيرتي برو (CVPro)</span>
+                <span dir="ltr">ai-studio-applet-webapp • {new Date().toLocaleDateString('ar-SA')}</span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -75,6 +75,8 @@ export interface StyleConfig {
   avatarShape: 'circle' | 'rounded' | 'square' | 'none';
   showIcons: boolean;
   direction: 'rtl' | 'ltr';
+  showWatermark?: boolean;
+  watermarkText?: string;
 }
 
 export interface CVData {

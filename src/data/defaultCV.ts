@@ -103,6 +103,8 @@ export const initialCVData: CVData = {
     spacing: 'normal',
     avatarShape: 'rounded',
     showIcons: true,
-    direction: 'rtl'
+    direction: 'rtl',
+    showWatermark: true,
+    watermarkText: 'سيرتي برو • CVPro - تم التوثيق'
   }
 };

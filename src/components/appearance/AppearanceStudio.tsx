@@ -381,6 +381,40 @@ export const AppearanceStudio: React.FC<AppearanceStudioProps> = ({ onGoToPrevie
                     </button>
                   </div>
                 </div>
+
+                {/* Watermark Settings */}
+                <div className="pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-800">العلامة المائية عند الطباعة والشاشة</h4>
+                      <p className="text-[11px] text-slate-500">طباعة ختم أو علامة مائية لحفظ الحقوق والتوثيق</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => updateStyle({ showWatermark: cvData.style.showWatermark === false ? true : false })}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
+                        cvData.style.showWatermark !== false
+                          ? 'bg-brand-600 text-white'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {cvData.style.showWatermark !== false ? 'مفعلة' : 'معطلة'}
+                    </button>
+                  </div>
+
+                  {cvData.style.showWatermark !== false && (
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">نص العلامة المائية:</label>
+                      <input
+                        type="text"
+                        value={cvData.style.watermarkText || 'سيرتي برو • CVPro'}
+                        onChange={(e) => updateStyle({ watermarkText: e.target.value })}
+                        placeholder="سيرتي برو • CVPro"
+                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
