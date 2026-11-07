@@ -91,6 +91,27 @@ export interface StyleConfig {
   watermarkText?: string;
 }
 
+export interface JobApplication {
+  id: string;
+  company: string;
+  position: string;
+  location?: string;
+  status: 'saved' | 'applied' | 'interview' | 'offer';
+  date: string;
+  salary?: string;
+  notes?: string;
+}
+
+export interface CoverLetter {
+  id: string;
+  title: string;
+  recipientCompany: string;
+  recipientName?: string;
+  jobTitle: string;
+  content: string;
+  updatedAt: string;
+}
+
 export interface CVData {
   id: string;
   title: string;
