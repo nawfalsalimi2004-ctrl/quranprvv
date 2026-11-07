@@ -1,14 +1,26 @@
 export interface PersonalInfo {
   fullName: string;
+  firstName?: string;
+  lastName?: string;
   jobTitle: string;
   email: string;
   phone: string;
   address: string;
+  postalCode?: string;
+  city?: string;
   website: string;
   linkedin: string;
   github: string;
   avatarUrl: string;
   summary: string;
+  dateOfBirth?: string;
+  placeOfBirth?: string;
+  driverLicense?: string;
+  gender?: string;
+  nationality?: string;
+  maritalStatus?: string;
+  customFields?: Array<{ id: string; label: string; value: string }>;
+  isJobTitleAsCVTitle?: boolean;
 }
 
 export interface Experience {

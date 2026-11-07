@@ -35,14 +35,16 @@ const MainApp: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col bg-white text-slate-800 ${language === 'ar' ? 'font-sans' : 'font-sans'}`}>
-      {/* Navbar Header */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        openAuthModal={() => setAuthModalOpen(true)}
-        language={language}
-        onLanguageChange={handleLanguageChange}
-      />
+      {/* Navbar Header (Hidden in builder mode to match full-bleed UI) */}
+      {activeTab !== 'builder' && (
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          openAuthModal={() => setAuthModalOpen(true)}
+          language={language}
+          onLanguageChange={handleLanguageChange}
+        />
+      )}
 
       {/* Main Content Area based on activeTab */}
       <main className="flex-1">
@@ -62,6 +64,9 @@ const MainApp: React.FC = () => {
           <CVBuilder
             onGoToPreview={() => setActiveTab('preview')}
             onGoToAppearance={() => setActiveTab('appearance')}
+            onGoToHome={() => setActiveTab('home')}
+            language={language}
+            onLanguageChange={handleLanguageChange}
           />
         )}
 
@@ -99,8 +104,8 @@ const MainApp: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer (Hidden in builder) */}
+      {activeTab !== 'builder' && <Footer />}
 
       {/* Auth Modal (Login / Register) */}
       <AuthModal
