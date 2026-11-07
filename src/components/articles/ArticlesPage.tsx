@@ -47,7 +47,8 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [readingArticle, setReadingArticle] = useState<Article | null>(null);
   const [apiShareArticle, setApiShareArticle] = useState<Article | null>(null);
-  const [activeCodeTab, setActiveCodeTab] = useState<'curl' | 'javascript' | 'python' | 'json'>('curl');
+  const [activeCodeTab, setActiveCodeTab] = useState<'blogger' | 'curl' | 'javascript' | 'python' | 'json'>('blogger');
+  const [bloggerWidgetMode, setBloggerWidgetMode] = useState<'single' | 'feed'>('single');
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   // Sync articles if updated from admin in localStorage
@@ -485,9 +486,20 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
             </div>
 
             {/* Code Snippets Tabs */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+                  <button
+                    onClick={() => setActiveCodeTab('blogger')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                      activeCodeTab === 'blogger'
+                        ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                        : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                    }`}
+                  >
+                    <span>🟠 كود بلوجر (Blogger)</span>
+                  </button>
+
                   {(['curl', 'javascript', 'python', 'json'] as const).map(tab => (
                     <button
                       key={tab}
@@ -506,7 +518,13 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
                 <button
                   onClick={() => {
                     let code = '';
-                    if (activeCodeTab === 'curl') {
+                    if (activeCodeTab === 'blogger') {
+                      if (bloggerWidgetMode === 'single') {
+                        code = `<!-- كود ويدجت مقال سيرتي برو لمدونات بلوجر (Blogger HTML/JS Gadget) -->\n<div style="font-family:'Cairo','Tajawal',sans-serif;direction:rtl;text-align:right;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,0.06);margin:20px 0;overflow:hidden;max-width:680px;">\n  <div style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:#ffffff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:bold;">\n    <span>⚡ مقال مهني معتمد | سيرتي برو</span>\n    <span style="background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:20px;font-size:10px;">Blogger Gadget</span>\n  </div>\n  <div style="padding:18px;">\n    <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;color:#0f172a;line-height:1.4;">${apiShareArticle.title}</h3>\n    <p style="margin:0 0 14px;font-size:13px;color:#64748b;line-height:1.6;">${apiShareArticle.summary}</p>\n    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:12px;font-size:12px;color:#94a3b8;">\n      <span>✍️ ${apiShareArticle.author}</span>\n      <a href="https://quranprvv.vercel.app" target="_blank" style="background:#4f46e5;color:#ffffff;text-decoration:none;padding:5px 14px;border-radius:8px;font-weight:bold;font-size:11px;">قراءة في المنصة &larr;</a>\n    </div>\n  </div>\n</div>`;
+                      } else {
+                        code = `<!-- ويدجت شريط أحدث مقالات سيرتي برو لمدونات بلوجر (Blogger Feed Gadget) -->\n<div id="cvpro-blogger-feed" style="font-family:'Cairo','Tajawal',sans-serif;direction:rtl;text-align:right;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;box-shadow:0 4px 14px rgba(0,0,0,0.06);max-width:680px;">\n  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:2px solid #eef2ff;padding-bottom:10px;">\n    <h4 style="margin:0;font-size:15px;font-weight:bold;color:#1e1b4b;">📚 نصائح السيرة الذاتية والتوظيف</h4>\n    <a href="https://quranprvv.vercel.app" target="_blank" style="font-size:11px;background:#4f46e5;color:#fff;padding:3px 10px;border-radius:20px;text-decoration:none;font-weight:bold;">سيرتي برو</a>\n  </div>\n  <div id="cvpro-feed-list" style="display:flex;flex-direction:column;gap:12px;">\n    <div style="text-align:center;color:#94a3b8;font-size:12px;padding:12px;">جاري استدعاء أحدث المقالات...</div>\n  </div>\n</div>\n<script>\n(function() {\n  fetch('https://quranprvv.vercel.app/api/articles')\n    .then(function(r){ return r.json(); })\n    .then(function(d){\n      var el = document.getElementById('cvpro-feed-list');\n      if(d && d.articles && d.articles.length) {\n        var h = '';\n        d.articles.forEach(function(item){\n          h += '<div style="border-bottom:1px solid #f8fafc;padding-bottom:8px;">';\n          h += '<a href="https://quranprvv.vercel.app" target="_blank" style="display:block;font-size:13px;font-weight:bold;color:#0f172a;text-decoration:none;margin-bottom:3px;line-height:1.4;">' + item.title + '</a>';\n          h += '<p style="margin:0;font-size:11px;color:#64748b;line-height:1.4;">' + (item.summary ? item.summary.substring(0, 85) + '...' : '') + '</p>';\n          h += '</div>';\n        });\n        el.innerHTML = h;\n      }\n    })\n    .catch(function(e){ console.log('Blogger feed error:', e); });\n})();\n</script>`;
+                      }
+                    } else if (activeCodeTab === 'curl') {
                       code = `curl -X GET "https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}" \\\n  -H "Authorization: Bearer cvpro_public_key" \\\n  -H "Accept: application/json"`;
                     } else if (activeCodeTab === 'javascript') {
                       code = `fetch('https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}', {\n  headers: {\n    'Authorization': 'Bearer cvpro_public_key',\n    'Accept': 'application/json'\n  }\n})\n.then(res => res.json())\n.then(article => console.log(article));`;
@@ -517,15 +535,101 @@ export const ArticlesPage: React.FC<ArticlesPageProps> = ({ onGoToBuilder, onGoT
                     }
                     copyToClipboard(code, 'code');
                   }}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1"
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 shrink-0"
                 >
-                  {copiedText === 'code' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                  <span>{copiedText === 'code' ? 'تم نسخ الكود!' : 'نسخ الكود'}</span>
+                  {copiedText === 'code' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedText === 'code' ? 'تم نسخ الكود بنجاح!' : 'نسخ الكود'}</span>
                 </button>
               </div>
 
+              {/* Blogger Mode Selector */}
+              {activeCodeTab === 'blogger' && (
+                <div className="flex items-center justify-between p-2 rounded-xl bg-amber-50 border border-amber-200 text-xs">
+                  <span className="font-bold text-amber-950">نمط ويدجت بلوجر:</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setBloggerWidgetMode('single')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
+                        bloggerWidgetMode === 'single'
+                          ? 'bg-amber-500 text-slate-950 shadow-2xs'
+                          : 'bg-white text-slate-700 hover:bg-amber-100'
+                      }`}
+                    >
+                      تضمين هذا المقال فقط
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBloggerWidgetMode('feed')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
+                        bloggerWidgetMode === 'feed'
+                          ? 'bg-amber-500 text-slate-950 shadow-2xs'
+                          : 'bg-white text-slate-700 hover:bg-amber-100'
+                      }`}
+                    >
+                      ويدجت قائمة كل المقالات
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Code Box */}
               <div className="bg-slate-950 rounded-2xl p-4 text-left font-mono text-[11px] text-slate-200 overflow-x-auto max-h-56" dir="ltr">
+                {activeCodeTab === 'blogger' && bloggerWidgetMode === 'single' && (
+                  <pre className="text-amber-300">
+{`<!-- كود ويدجت مقال سيرتي برو لمدونات بلوجر (Blogger HTML/JS Gadget) -->
+<div style="font-family:'Cairo','Tajawal',sans-serif;direction:rtl;text-align:right;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,0.06);margin:20px 0;overflow:hidden;max-width:680px;">
+  <div style="background:linear-gradient(135deg,#4f46e5,#6366f1);color:#ffffff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:bold;">
+    <span>⚡ مقال مهني معتمد | سيرتي برو</span>
+    <span style="background:rgba(255,255,255,0.2);padding:2px 10px;border-radius:20px;font-size:10px;">Blogger Gadget</span>
+  </div>
+  <div style="padding:18px;">
+    <h3 style="margin:0 0 10px;font-size:18px;font-weight:bold;color:#0f172a;line-height:1.4;">${apiShareArticle.title}</h3>
+    <p style="margin:0 0 14px;font-size:13px;color:#64748b;line-height:1.6;">${apiShareArticle.summary}</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:12px;font-size:12px;color:#94a3b8;">
+      <span>✍️ ${apiShareArticle.author}</span>
+      <a href="https://quranprvv.vercel.app" target="_blank" style="background:#4f46e5;color:#ffffff;text-decoration:none;padding:5px 14px;border-radius:8px;font-weight:bold;font-size:11px;">قراءة في المنصة &larr;</a>
+    </div>
+  </div>
+</div>`}
+                  </pre>
+                )}
+
+                {activeCodeTab === 'blogger' && bloggerWidgetMode === 'feed' && (
+                  <pre className="text-amber-300">
+{`<!-- ويدجت شريط أحدث مقالات سيرتي برو لمدونات بلوجر (Blogger Feed Gadget) -->
+<div id="cvpro-blogger-feed" style="font-family:'Cairo','Tajawal',sans-serif;direction:rtl;text-align:right;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;box-shadow:0 4px 14px rgba(0,0,0,0.06);max-width:680px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:2px solid #eef2ff;padding-bottom:10px;">
+    <h4 style="margin:0;font-size:15px;font-weight:bold;color:#1e1b4b;">📚 نصائح السيرة الذاتية والتوظيف</h4>
+    <a href="https://quranprvv.vercel.app" target="_blank" style="font-size:11px;background:#4f46e5;color:#fff;padding:3px 10px;border-radius:20px;text-decoration:none;font-weight:bold;">سيرتي برو</a>
+  </div>
+  <div id="cvpro-feed-list" style="display:flex;flex-direction:column;gap:12px;">
+    <div style="text-align:center;color:#94a3b8;font-size:12px;padding:12px;">جاري استدعاء أحدث المقالات...</div>
+  </div>
+</div>
+<script>
+(function() {
+  fetch('https://quranprvv.vercel.app/api/articles')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var el = document.getElementById('cvpro-feed-list');
+      if(d && d.articles && d.articles.length) {
+        var h = '';
+        d.articles.forEach(function(item){
+          h += '<div style="border-bottom:1px solid #f8fafc;padding-bottom:8px;">';
+          h += '<a href="https://quranprvv.vercel.app" target="_blank" style="display:block;font-size:13px;font-weight:bold;color:#0f172a;text-decoration:none;margin-bottom:3px;line-height:1.4;">' + item.title + '</a>';
+          h += '<p style="margin:0;font-size:11px;color:#64748b;line-height:1.4;">' + (item.summary ? item.summary.substring(0, 85) + '...' : '') + '</p>';
+          h += '</div>';
+        });
+        el.innerHTML = h;
+      }
+    })
+    .catch(function(e){ console.log('Blogger feed error:', e); });
+})();
+</script>`}
+                  </pre>
+                )}
+
                 {activeCodeTab === 'curl' && (
                   <pre className="text-emerald-400">
 {`curl -X GET "https://quranprvv.vercel.app/api/articles?id=${apiShareArticle.id}" \\
@@ -572,6 +676,21 @@ print("Loaded Article:", result["article"]["title"])`}
                   </pre>
                 )}
               </div>
+
+              {/* Blogger Integration Quick Guide */}
+              {activeCodeTab === 'blogger' && (
+                <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200 text-xs text-amber-950 space-y-1">
+                  <p className="font-bold flex items-center gap-1.5">
+                    <span>💡 كيفية تركيب الكود في مدونتك على بلوجر (Blogger):</span>
+                  </p>
+                  <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-amber-900 leading-relaxed pr-1">
+                    <li>انسخ الكود بالضغط على زر <strong>"نسخ الكود"</strong> أعلاه.</li>
+                    <li>توجه إلى لوحة تحكم مدونتك في بلوجر (Blogger) ثم ادخل على قسم <strong>"التنسيق" (Layout)</strong>.</li>
+                    <li>اضغط على <strong>"إضافة أداة" (Add a Gadget)</strong> في الشريط الجانبي أو الفوتر.</li>
+                    <li>اختر أداة <strong>HTML/JavaScript</strong> والصق الكود فيها ثم اضغط <strong>حفظ</strong>.</li>
+                  </ol>
+                </div>
+              )}
             </div>
 
             {/* Bottom Actions */}

@@ -1494,6 +1494,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoHome }) => {
                   <div className="font-bold text-indigo-600">GET https://quranprvv.vercel.app/api/v1/articles</div>
                   <div className="text-slate-700">Headers: &#123; "Authorization": "Bearer cvpro_live_..." &#125;</div>
                 </div>
+
+                <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 font-mono space-y-1" dir="ltr">
+                  <div className="text-amber-800 font-bold">// Integration 4: Google Blogger (بلوجر) Feed Gadget</div>
+                  <div className="font-bold text-amber-900">Endpoint: https://quranprvv.vercel.app/api/articles</div>
+                  <div className="text-slate-700 font-sans text-[11px]">مخصص لمدونات بلوجر: يتم تركيبه في قالب المدونة من خلال (التنسيق &gt; إضافة أداة &gt; HTML/JavaScript) لعرض المقالات تلقائياً.</div>
+                </div>
               </div>
 
               {/* Live Test Response viewer */}
