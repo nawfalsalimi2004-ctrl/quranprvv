@@ -49,6 +49,7 @@ const MainApp: React.FC = () => {
         {activeTab === 'appearance' && (
           <AppearanceStudio
             onGoToPreview={() => setActiveTab('preview')}
+            onGoToPricing={() => setActiveTab('pricing')}
           />
         )}
 
@@ -56,6 +57,7 @@ const MainApp: React.FC = () => {
           <CVPreview
             onGoToAppearance={() => setActiveTab('appearance')}
             onGoToBuilder={() => setActiveTab('builder')}
+            onGoToPricing={() => setActiveTab('pricing')}
           />
         )}
 

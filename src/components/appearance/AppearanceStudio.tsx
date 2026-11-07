@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCV } from '../../context/CVContext';
+import { useAuth } from '../../context/AuthContext';
 import { TEMPLATES, COLOR_PALETTES, FONTS } from '../../data/templates';
 import { TemplateId, FontFamily } from '../../types/cv';
 import { 
@@ -13,7 +14,12 @@ import {
   Sliders, 
   CheckCircle2, 
   RotateCcw,
-  Maximize2
+  Maximize2,
+  Crown,
+  Lock,
+  Stamp,
+  BadgeCheck,
+  X
 } from 'lucide-react';
 import { ModernTemplate } from '../preview/templates/ModernTemplate';
 import { ExecutiveTemplate } from '../preview/templates/ExecutiveTemplate';
@@ -23,11 +29,29 @@ import { MinimalTemplate } from '../preview/templates/MinimalTemplate';
 
 interface AppearanceStudioProps {
   onGoToPreview: () => void;
+  onGoToPricing?: () => void;
 }
 
-export const AppearanceStudio: React.FC<AppearanceStudioProps> = ({ onGoToPreview }) => {
+export const AppearanceStudio: React.FC<AppearanceStudioProps> = ({ onGoToPreview, onGoToPricing }) => {
   const { cvData, updateStyle } = useCV();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'templates' | 'colors' | 'fonts' | 'layout'>('templates');
+  const [vipModalOpen, setVipModalOpen] = useState(false);
+
+  const isUserVip = Boolean(user?.isVip || user?.role === 'admin');
+
+  const handleToggleWatermark = () => {
+    // If currently ON, user is attempting to turn it OFF
+    if (cvData.style.showWatermark !== false) {
+      if (!isUserVip) {
+        setVipModalOpen(true);
+        return;
+      }
+      updateStyle({ showWatermark: false });
+    } else {
+      updateStyle({ showWatermark: true });
+    }
+  };
 
   const renderActivePreview = () => {
     switch (cvData.style.templateId) {
@@ -383,34 +407,57 @@ export const AppearanceStudio: React.FC<AppearanceStudioProps> = ({ onGoToPrevie
                 </div>
 
                 {/* Watermark Settings */}
-                <div className="pt-4 border-t border-slate-100">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="pt-4 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-800">العلامة المائية عند الطباعة والشاشة</h4>
-                      <p className="text-[11px] text-slate-500">طباعة ختم أو علامة مائية لحفظ الحقوق والتوثيق</p>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-xs font-bold text-slate-800">العلامة المائية عند الطباعة</h4>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                          isUserVip ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          <Crown className="w-3 h-3 fill-amber-500 text-amber-500" />
+                          <span>إزالتها حصرية لـ VIP</span>
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {isUserVip 
+                          ? 'بصفتك مشترك VIP، يمكنك إزالة العلامة المائية تماماً أو تفعيلها.' 
+                          : 'الحساب الحالي مجاني؛ العلامة المائية مفعلة لحفظ الحقوق وتتطلب VIP لإزالتها.'}
+                      </p>
                     </div>
+
                     <button
                       type="button"
-                      onClick={() => updateStyle({ showWatermark: cvData.style.showWatermark === false ? true : false })}
-                      className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
+                      onClick={handleToggleWatermark}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs ${
                         cvData.style.showWatermark !== false
                           ? 'bg-brand-600 text-white'
-                          : 'bg-slate-200 text-slate-700'
+                          : 'bg-emerald-600 text-white'
                       }`}
                     >
-                      {cvData.style.showWatermark !== false ? 'مفعلة' : 'معطلة'}
+                      {cvData.style.showWatermark !== false ? (
+                        <>
+                          <span>العلامة مفعلة</span>
+                          {!isUserVip && <Lock className="w-3 h-3 text-white/80" />}
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>معطلة (VIP ✓)</span>
+                        </>
+                      )}
                     </button>
                   </div>
 
                   {cvData.style.showWatermark !== false && (
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">نص العلامة المائية:</label>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">نص العلامة المائية المطبوعة:</label>
                       <input
                         type="text"
                         value={cvData.style.watermarkText || 'سيرتي برو • CVPro'}
                         onChange={(e) => updateStyle({ watermarkText: e.target.value })}
                         placeholder="سيرتي برو • CVPro"
-                        className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
                   )}
@@ -470,6 +517,63 @@ export const AppearanceStudio: React.FC<AppearanceStudioProps> = ({ onGoToPrevie
         </div>
 
       </div>
+
+      {/* VIP WATERMARK NOTICE MODAL */}
+      {vipModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-900 flex items-center justify-center mx-auto shadow-md">
+              <Crown className="w-8 h-8 fill-slate-900" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">إزالة العلامة المائية ميزة VIP حصرية!</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                حسابك الحالي غير مشترك في باقة VIP؛ لذلك تظل العلامة المائية مفعلة لحفظ حقوق المنصة. قم بالترقية الآن لتصدير سيرتك بدون أي علامة مائية والحصول على شارة التوثيق الرسمية 🛡️.
+              </p>
+            </div>
+
+            <div className="p-3 bg-amber-50/80 rounded-2xl border border-amber-200 text-right space-y-1.5 text-xs text-amber-950 font-medium">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>تصدير PDF نظيف 100% بدون علامة مائية</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="w-4 h-4 text-blue-600 fill-blue-600 text-white" />
+                <span>شارة التوثيق الزرقاء في حسابك وسيرتك</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span>وصول كامل لكافة قوالب VIP الفاخرة</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
+              {onGoToPricing && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVipModalOpen(false);
+                    onGoToPricing();
+                  }}
+                  className="w-full sm:flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-black shadow-md shadow-brand-500/20 transition flex items-center justify-center gap-2"
+                >
+                  <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
+                  <span>ترقية إلى VIP والاشتراك الآن</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setVipModalOpen(false)}
+                className="w-full sm:w-auto px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

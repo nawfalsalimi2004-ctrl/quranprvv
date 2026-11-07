@@ -20,7 +20,9 @@ import {
   Stamp,
   Camera,
   BadgeCheck,
-  Crown
+  Crown,
+  Lock,
+  X
 } from 'lucide-react';
 import { TEMPLATES } from '../../data/templates';
 import { TemplateId } from '../../types/cv';
@@ -29,9 +31,10 @@ import { useAuth } from '../../context/AuthContext';
 interface CVPreviewProps {
   onGoToAppearance?: () => void;
   onGoToBuilder?: () => void;
+  onGoToPricing?: () => void;
 }
 
-export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBuilder }) => {
+export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBuilder, onGoToPricing }) => {
   const { cvData, updateStyle, exportAsJSON, loadDemoData } = useCV();
   const { user } = useAuth();
   const [zoomLevel, setZoomLevel] = useState<number>(() => {
@@ -42,6 +45,22 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
     return 100;
   });
   const [copied, setCopied] = useState(false);
+  const [vipModalOpen, setVipModalOpen] = useState(false);
+
+  const isUserVip = Boolean(user?.isVip || user?.role === 'admin');
+  const effectiveShowWatermark = !isUserVip ? true : (cvData.style.showWatermark !== false);
+
+  const handleToggleWatermark = () => {
+    if (effectiveShowWatermark) {
+      if (!isUserVip) {
+        setVipModalOpen(true);
+        return;
+      }
+      updateStyle({ showWatermark: false });
+    } else {
+      updateStyle({ showWatermark: true });
+    }
+  };
 
   const handlePrint = () => {
     window.print();
@@ -130,16 +149,17 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
 
             {/* Watermark Toggle */}
             <button
-              onClick={() => updateStyle({ showWatermark: cvData.style.showWatermark === false ? true : false })}
+              onClick={handleToggleWatermark}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition ${
-                cvData.style.showWatermark !== false
+                effectiveShowWatermark
                   ? 'bg-brand-50 text-brand-700 border border-brand-200'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               }`}
-              title="تفعيل/تعطيل العلامة المائية عند الطباعة والشاشة"
+              title={isUserVip ? 'تبديل ظهور العلامة المائية' : 'إزالة العلامة المائية تتطلب اشتراك VIP'}
             >
               <Stamp className="w-3.5 h-3.5" />
-              <span>{cvData.style.showWatermark !== false ? 'العلامة المائية: مفعلة' : 'العلامة المائية: معطلة'}</span>
+              <span>{effectiveShowWatermark ? 'العلامة المائية: مفعلة' : 'العلامة المائية: معطلة (VIP ✓)'}</span>
+              {!isUserVip && <Lock className="w-3 h-3 text-amber-600" />}
             </button>
 
             {/* User Verified Status Pill */}
@@ -220,7 +240,7 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
             }}
           >
             {/* Watermark Overlay (Printed & Screen) */}
-            {cvData.style.showWatermark !== false && (
+            {effectiveShowWatermark && (
               <div 
                 className="print-watermark pointer-events-none select-none overflow-hidden absolute inset-0 flex items-center justify-center z-30"
                 style={{ opacity: 0.08 }}
@@ -247,7 +267,7 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
             {renderActiveTemplate()}
 
             {/* Bottom Print Watermark Footer */}
-            {cvData.style.showWatermark !== false && (
+            {effectiveShowWatermark && (
               <div className="w-full pt-2.5 pb-2 border-t border-slate-200 bg-white text-center text-[10px] text-slate-400 font-medium flex items-center justify-between px-6">
                 <span>📄 تم إنشاء هذه السيرة الذاتية عبر منصة سيرتي برو (CVPro)</span>
                 <span dir="ltr">ai-studio-applet-webapp • {new Date().toLocaleDateString('ar-SA')}</span>
@@ -257,6 +277,62 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ onGoToAppearance, onGoToBu
         </div>
 
       </div>
+
+      {/* VIP WATERMARK NOTICE MODAL */}
+      {vipModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-900 flex items-center justify-center mx-auto shadow-md">
+              <Crown className="w-8 h-8 fill-slate-900" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900">إزالة العلامة المائية ميزة VIP حصرية!</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                حسابك الحالي مجاني؛ لذا تظل العلامة المائية مفعلة لحفظ حقوق المنصة. اشترك في باقة VIP الآن لتصدير سيرتك بدون أي علامة مائية والحصول على شارة التوثيق الرسمية 🛡️.
+              </p>
+            </div>
+
+            <div className="p-3 bg-amber-50/80 rounded-2xl border border-amber-200 text-right space-y-1.5 text-xs text-amber-950 font-medium">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>تصدير PDF نظيف 100% بدون أي علامة مائية</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="w-4 h-4 text-blue-600 fill-blue-600 text-white" />
+                <span>شارة التوثيق الزرقاء في حسابك وسيرتك</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
+                <span>وصول كامل لكافة قوالب VIP الفاخرة</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
+              {onGoToPricing && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVipModalOpen(false);
+                    onGoToPricing();
+                  }}
+                  className="w-full sm:flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-black shadow-md shadow-brand-500/20 transition flex items-center justify-center gap-2"
+                >
+                  <Crown className="w-4 h-4 fill-amber-300 text-amber-300" />
+                  <span>ترقية إلى VIP والاشتراك الآن</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setVipModalOpen(false)}
+                className="w-full sm:w-auto px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
