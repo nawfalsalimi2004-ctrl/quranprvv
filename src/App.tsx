@@ -17,14 +17,31 @@ export type ActiveTab = 'home' | 'builder' | 'appearance' | 'preview' | 'article
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [language, setLanguage] = useState<'fr' | 'ar'>(() => {
+    return (localStorage.getItem('cv_lang') as 'fr' | 'ar') || 'fr';
+  });
+
+  const handleLanguageChange = (lang: 'fr' | 'ar') => {
+    setLanguage(lang);
+    localStorage.setItem('cv_lang', lang);
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+  };
+
+  React.useEffect(() => {
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+    <div className={`min-h-screen flex flex-col bg-white text-slate-800 ${language === 'ar' ? 'font-sans' : 'font-sans'}`}>
       {/* Navbar Header */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         openAuthModal={() => setAuthModalOpen(true)}
+        language={language}
+        onLanguageChange={handleLanguageChange}
       />
 
       {/* Main Content Area based on activeTab */}
@@ -36,6 +53,8 @@ const MainApp: React.FC = () => {
             onOpenAuth={() => setAuthModalOpen(true)}
             onGoToArticles={() => setActiveTab('articles')}
             onGoToPricing={() => setActiveTab('pricing')}
+            language={language}
+            onLanguageChange={handleLanguageChange}
           />
         )}
 

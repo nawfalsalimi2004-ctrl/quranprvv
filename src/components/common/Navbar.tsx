@@ -11,10 +11,14 @@ import {
   X, 
   Sparkles,
   Download,
-  CheckCircle2,
   BookOpen,
   Crown,
-  BadgeCheck
+  BadgeCheck,
+  ChevronDown,
+  Briefcase,
+  Mail,
+  CheckSquare,
+  Globe
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCV } from '../../context/CVContext';
@@ -23,190 +27,268 @@ interface NavbarProps {
   activeTab: 'home' | 'builder' | 'appearance' | 'preview' | 'articles' | 'pricing' | 'admin';
   setActiveTab: (tab: 'home' | 'builder' | 'appearance' | 'preview' | 'articles' | 'pricing' | 'admin') => void;
   openAuthModal: () => void;
+  language?: 'fr' | 'ar';
+  onLanguageChange?: (lang: 'fr' | 'ar') => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, openAuthModal }) => {
+export const Navbar: React.FC<NavbarProps> = ({ 
+  activeTab, 
+  setActiveTab, 
+  openAuthModal,
+  language = 'fr',
+  onLanguageChange
+}) => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { score } = useCV();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
 
-  const navItems = [
-    { id: 'home', label: 'الرئيسية', icon: Sparkles },
-    { id: 'builder', label: 'محرر السيرة الذاتية', icon: FileText },
-    { id: 'appearance', label: 'المظهر والقوالب', icon: Palette },
-    { id: 'preview', label: 'المعاينة والطباعة', icon: Eye },
-    { id: 'articles', label: 'المقالات والنصائح', icon: BookOpen },
-    { id: 'pricing', label: 'باقات VIP', icon: Crown, badge: 'VIP' },
-    ...(isAdmin ? [{ id: 'admin', label: 'لوحة الإدارة', icon: ShieldCheck, badge: 'مسؤول' }] : []),
-  ];
+  const isFr = language === 'fr';
+
+  const scrollToFAQ = () => {
+    setActiveTab('home');
+    setTimeout(() => {
+      const el = document.getElementById('faq-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 no-print transition-all">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 no-print transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-18 sm:h-20">
           
-          {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-              <FileText className="w-6 h-6" />
+          {/* Logo (CV.FR Style matching Screenshot 1 & 2) */}
+          <div 
+            className="flex items-center gap-2.5 cursor-pointer group select-none" 
+            onClick={() => setActiveTab('home')}
+          >
+            <div className="w-8 h-8 rounded-md bg-[#1462ff] flex items-center justify-center text-white shadow-sm transition transform group-hover:scale-105">
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                <path 
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" 
+                  fill="white" 
+                />
+                <path 
+                  d="M14 2v6h6" 
+                  fill="#1462ff" 
+                />
+              </svg>
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-xl tracking-tight text-slate-900">سيرتي</span>
-                <span className="font-extrabold text-xl text-brand-600">برو</span>
-                <span className="text-[10px] bg-brand-50 text-brand-600 font-bold px-1.5 py-0.5 rounded-full border border-brand-200">
-                  AI+
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-500 hidden sm:block">منصة إنشاء السير الذاتية الذكية</p>
-            </div>
+            <span className="font-extrabold text-2xl tracking-tight text-gray-950 font-sans">
+              CV.FR
+            </span>
           </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id as any)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    isActive
-                      ? 'bg-brand-50 text-brand-600 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
-                  }`}
+          {/* Desktop Navigation Links (Center matching Screenshot 1 & 2) */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-[15px] font-medium text-gray-700">
+            
+            {/* Outils / Tools Dropdown */}
+            <div className="relative" onMouseLeave={() => setToolsDropdownOpen(false)}>
+              <button
+                onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
+                onMouseEnter={() => setToolsDropdownOpen(true)}
+                className={`flex items-center gap-1.5 transition py-2 ${
+                  toolsDropdownOpen ? 'text-[#1462ff] font-semibold' : 'hover:text-gray-950'
+                }`}
+              >
+                <span>{isFr ? 'Outils' : 'الأدوات'}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${toolsDropdownOpen ? 'rotate-180 text-[#1462ff]' : 'text-gray-400'}`} />
+              </button>
+
+              {toolsDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                  onMouseEnter={() => setToolsDropdownOpen(true)}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-brand-600' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                  <button
+                    onClick={() => {
+                      setActiveTab('builder');
+                      setToolsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#1462ff] flex items-center justify-center">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-xs text-gray-900">{isFr ? 'Créateur de CV' : 'محرر السيرة الذاتية'}</p>
+                      <p className="text-[11px] text-gray-500">{isFr ? 'Créez votre CV en quelques clics' : 'أنشئ سيرتك الذاتية بسهولة'}</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('appearance');
+                      setToolsDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                      <Palette className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-xs text-gray-900">{isFr ? 'Modèles & Design' : 'القوالب والتصاميم'}</p>
+                      <p className="text-[11px] text-gray-500">{isFr ? 'Plus de 20 templates modernes' : 'أكثر من 20 قالباً عصرياً'}</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('home');
+                      setToolsDropdownOpen(false);
+                      setTimeout(() => {
+                        const el = document.getElementById('features-phone-section');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-xs text-gray-900">{isFr ? 'Lettre de motivation' : 'خطابات التغطية'}</p>
+                      <p className="text-[11px] text-gray-500">{isFr ? 'Rédigez des lettres impactantes' : 'صياغة رسائل تحفيزية مميزة'}</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab('home');
+                      setToolsDropdownOpen(false);
+                      setTimeout(() => {
+                        const el = document.getElementById('features-phone-section');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-3 transition"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                      <Briefcase className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-xs text-gray-900">{isFr ? 'Offres d’emplois' : 'عروض العمل'}</p>
+                      <p className="text-[11px] text-gray-500">{isFr ? 'Alertes d’emploi ciblées' : 'إشعارات وظائف ملائمة لملفك'}</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Prix / Pricing */}
+            <button
+              onClick={() => setActiveTab('pricing')}
+              className={`hover:text-gray-950 transition ${
+                activeTab === 'pricing' ? 'text-[#1462ff] font-semibold' : ''
+              }`}
+            >
+              {isFr ? 'Prix' : 'الأسعار'}
+            </button>
+
+            {/* FAQ */}
+            <button
+              onClick={scrollToFAQ}
+              className="hover:text-gray-950 transition"
+            >
+              {isFr ? 'FAQ' : 'الأسئلة الشائعة'}
+            </button>
+
+            {/* Articles */}
+            <button
+              onClick={() => setActiveTab('articles')}
+              className={`hover:text-gray-950 transition ${
+                activeTab === 'articles' ? 'text-[#1462ff] font-semibold' : ''
+              }`}
+            >
+              {isFr ? 'Articles' : 'المقالات'}
+            </button>
+
+            {/* Admin (Only if Admin logged in) */}
+            {isAdmin && (
+              <button
+                onClick={() => setActiveTab('admin')}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition ${
+                  activeTab === 'admin'
+                    ? 'bg-amber-100 text-amber-900'
+                    : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{isFr ? 'Admin' : 'لوحة الإدارة'}</span>
+              </button>
+            )}
           </nav>
 
-          {/* Right Action buttons */}
+          {/* Right Action buttons (Matching Screenshot 1 & 2) */}
           <div className="flex items-center gap-3">
             
-            {/* CV Score Badge (Compact) */}
-            <button
-              onClick={() => setActiveTab('builder')}
-              className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition"
-              title="معدل اكتمال السيرة الذاتية"
-            >
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span>قوة السيرة:</span>
-              <span className={`font-bold ${score >= 80 ? 'text-emerald-600' : score >= 50 ? 'text-amber-600' : 'text-rose-600'}`}>
-                {score}%
-              </span>
-            </button>
-
-            {/* Print/Download Direct Button */}
-            <button
-              onClick={() => {
-                setActiveTab('preview');
-                setTimeout(() => window.print(), 300);
-              }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition shadow-sm"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>تصدير PDF</span>
-            </button>
+            {/* Language Switcher Button (FR / AR) */}
+            {onLanguageChange && (
+              <button
+                onClick={() => onLanguageChange(isFr ? 'ar' : 'fr')}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition"
+                title={isFr ? 'Passer en Arabe' : 'Basculer en Français'}
+              >
+                <Globe className="w-3.5 h-3.5 text-gray-500" />
+                <span>{isFr ? 'AR' : 'FR'}</span>
+              </button>
+            )}
 
             {/* Auth / User Section */}
             {isAuthenticated ? (
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition"
+                  className="flex items-center gap-2 p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
                 >
                   <img
                     src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}
                     alt={user?.name}
-                    className="w-8 h-8 rounded-lg object-cover ring-2 ring-brand-500/20"
+                    className="w-7 h-7 rounded-md object-cover"
                   />
-                  <div className="text-right hidden sm:block pr-1">
+                  <div className="text-left hidden sm:block">
                     <div className="flex items-center gap-1">
-                      <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name}</p>
+                      <p className="text-xs font-bold text-gray-800 leading-tight">{user?.name}</p>
                       {user?.isVerifiedBadge && (
-                        <span title="حساب موثق رسمياً" className="inline-flex items-center">
-                          <BadgeCheck className="w-3.5 h-3.5 text-blue-500 fill-blue-500" />
-                        </span>
-                      )}
-                      {user?.isVip && (
-                        <span title="عضوية VIP" className="inline-flex items-center">
-                          <Crown className="w-3 h-3 text-amber-500 fill-amber-500" />
-                        </span>
+                        <BadgeCheck className="w-3.5 h-3.5 text-blue-500 fill-blue-500" />
                       )}
                     </div>
-                    {user?.role === 'admin' ? (
-                      <p className="text-[10px] text-amber-600 font-bold">مدير النظام (Admin)</p>
-                    ) : user?.isVip ? (
-                      <p className="text-[10px] text-amber-600 font-bold">عضو VIP متميز</p>
-                    ) : (
-                      <p className="text-[10px] text-slate-500 font-medium">حساب شخصي</p>
-                    )}
                   </div>
+                  <ChevronDown className="w-3 h-3 text-gray-400" />
                 </button>
 
                 {/* Dropdown Menu */}
                 {userDropdownOpen && (
-                  <div className="absolute left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-4 py-2.5 border-b border-slate-100 space-y-1">
-                      <p className="text-[10px] text-slate-400">الحساب الحالي</p>
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-bold text-slate-900 truncate">{user?.name}</p>
-                        {user?.isVerifiedBadge && (
-                          <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500 shrink-0" />
-                        )}
-                        {user?.isVip && (
-                          <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-
-                      {/* Official Verified Account Badge Card */}
-                      {user?.isVerifiedBadge && (
-                        <div className="mt-2 p-2 rounded-xl bg-blue-50/80 border border-blue-200/80 flex items-center gap-2 text-[11px] text-blue-800 font-bold">
-                          <BadgeCheck className="w-4 h-4 text-blue-600 fill-blue-600 shrink-0" />
-                          <span>حساب موثق رسمياً من المنصة ✓</span>
-                        </div>
-                      )}
-
-                      {/* VIP Status Card */}
-                      {user?.isVip && (
-                        <div className="mt-1.5 p-2 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center gap-2 text-[11px] text-amber-900 font-bold">
-                          <Crown className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
-                          <span>عضوية VIP (حتى {user.vipExpiresAt || '2027'})</span>
-                        </div>
-                      )}
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-xs font-bold text-gray-900">{user?.name}</p>
+                      <p className="text-[11px] text-gray-500 truncate">{user?.email}</p>
                     </div>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab('builder');
+                        setUserDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <FileText className="w-4 h-4 text-gray-400" />
+                      <span>{isFr ? 'Mon CV' : 'سيرتي الذاتية'}</span>
+                    </button>
 
                     <button
                       onClick={() => {
                         setActiveTab('pricing');
                         setUserDropdownOpen(false);
                       }}
-                      className="w-full text-right px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <Crown className="w-4 h-4 text-amber-500" />
-                      <span>باقات واشتراكات VIP</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setActiveTab('articles');
-                        setUserDropdownOpen(false);
-                      }}
-                      className="w-full text-right px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                    >
-                      <BookOpen className="w-4 h-4 text-indigo-500" />
-                      <span>المقالات والنصائح المهنية</span>
+                      <span>{isFr ? 'Abonnement VIP' : 'اشتراك VIP'}</span>
                     </button>
 
                     {user?.role === 'admin' && (
@@ -215,10 +297,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, openAut
                           setActiveTab('admin');
                           setUserDropdownOpen(false);
                         }}
-                        className="w-full text-right px-4 py-2 text-xs font-bold text-amber-700 bg-amber-50/70 hover:bg-amber-100 border-t border-b border-slate-100 flex items-center gap-2"
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-amber-700 hover:bg-amber-50 flex items-center gap-2"
                       >
                         <ShieldCheck className="w-4 h-4 text-amber-600" />
-                        لوحة تحكم الأدمن
+                        <span>{isFr ? 'Panneau Admin' : 'لوحة الإدارة'}</span>
                       </button>
                     )}
 
@@ -227,10 +309,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, openAut
                         logout();
                         setUserDropdownOpen(false);
                       }}
-                      className="w-full text-right px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 mt-1"
+                      className="w-full text-left px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 mt-1 border-t border-gray-100"
                     >
                       <LogOut className="w-4 h-4" />
-                      تسجيل الخروج
+                      <span>{isFr ? 'Se déconnecter' : 'تسجيل الخروج'}</span>
                     </button>
                   </div>
                 )}
@@ -238,19 +320,26 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, openAut
             ) : (
               <button
                 onClick={openAuthModal}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-600 text-white text-xs sm:text-sm font-bold hover:bg-brand-700 transition shadow-sm shadow-brand-500/20"
+                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm transition"
               >
-                <LogIn className="w-4 h-4" />
-                <span>دخول / حساب جديد</span>
+                {isFr ? 'Se connecter' : 'تسجيل الدخول'}
               </button>
             )}
+
+            {/* Créer un CV Button (Bold Blue Button from Screenshot 1 & 2) */}
+            <button
+              onClick={() => setActiveTab('builder')}
+              className="px-5 py-2 rounded-lg bg-[#1462ff] hover:bg-blue-700 text-white font-medium text-sm transition shadow-sm"
+            >
+              {isFr ? 'Créer un CV' : 'إنشاء سيرة ذاتية'}
+            </button>
 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 md:hidden"
+              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 md:hidden"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -258,33 +347,63 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, openAut
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id as any);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-semibold ${
-                  isActive ? 'bg-brand-50 text-brand-600 font-bold' : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icon className="w-5 h-5 text-slate-500" />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div className="md:hidden border-t border-gray-100 bg-white px-4 pt-3 pb-5 space-y-2">
+          <button
+            onClick={() => {
+              setActiveTab('builder');
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-md font-medium text-sm text-gray-800 hover:bg-gray-50"
+          >
+            {isFr ? 'Créateur de CV' : 'محرر السيرة الذاتية'}
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('appearance');
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-md font-medium text-sm text-gray-800 hover:bg-gray-50"
+          >
+            {isFr ? 'Modèles & Design' : 'القوالب والتصاميم'}
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('pricing');
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-md font-medium text-sm text-gray-800 hover:bg-gray-50"
+          >
+            {isFr ? 'Prix & VIP' : 'الأسعار وباقات VIP'}
+          </button>
+          <button
+            onClick={() => {
+              scrollToFAQ();
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-md font-medium text-sm text-gray-800 hover:bg-gray-50"
+          >
+            {isFr ? 'FAQ' : 'الأسئلة الشائعة'}
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('articles');
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-md font-medium text-sm text-gray-800 hover:bg-gray-50"
+          >
+            {isFr ? 'Articles' : 'المقالات'}
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setActiveTab('admin');
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 rounded-md font-bold text-sm text-amber-700 bg-amber-50"
+            >
+              {isFr ? 'Panneau Admin' : 'لوحة الإدارة'}
+            </button>
+          )}
         </div>
       )}
     </header>
